@@ -68,6 +68,5 @@ const styles = {
     },
     activePill: {
         color: 'red',
-        marginBottom: 10,
     },
 };
