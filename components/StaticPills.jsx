@@ -1,50 +1,59 @@
-import React from 'react';
-import {Text, TouchableOpacity, View} from "react-native";
-import {getOpacity} from "../helpers/getOpacity";
+import React, {useEffect, useRef, useState} from 'react';
+import {Text, TouchableOpacity, useWindowDimensions, View} from "react-native";
 
 export default function StaticPills({data, style, x, currentIndex, onPillPress, containerRef, scrollableContainer}) {
-    return (
-        <View style={[styles.container, style?.staticPillsContainer]}>
-            {!!data?.length && data.map((item, index) => (
-                <View key={index} style={{flex: 1}}>
-                    <TouchableOpacity
-                        onPress={() => {
-                            onPillPress(index)
+    const [pillWidth, setPillWidth] = useState(0);
+    const [headerWidth, setHeaderWidth] = useState(0);
+    const widthScreen = useWindowDimensions().width;
 
-                            if (index === currentIndex && scrollableContainer)
-                                containerRef?.current?.scrollTo({ x: 0, y: 0, animated: true })
-                        }}
-                        style={[
-                            {
-                                paddingHorizontal: 5,
-                                flexGrow: 1,
-                                flex: 1,
-                                alignItems: 'center',
-                            },
-                            style?.pillButton,
-                        ]}
-                    >
-                        <Text style={[
-                            style?.pillLabel || styles.pillLabel,
-                            index === currentIndex && (style?.activeLabel || styles.activePill),
-                        ]}>
-                            {item.tabLabel}
-                        </Text>
-                    </TouchableOpacity>
-                    <View style={[
-                        {
-                            marginTop: 5,
-                            marginHorizontal: 10,
-                            borderColor: 'red',
-                            borderBottomWidth: 2,
-                            // for fade in and fade out animation
-                            opacity: getOpacity(index, x),
-                        },
-                        style?.borderActive || styles.activeBorder,
-                    ]}/>
-                </View>
-            ))}
-        </View>
+    const transX = (x * headerWidth) / (data?.length * widthScreen);
+
+    return (
+        <>
+            <View style={[styles.container, style?.staticPillsContainer]}
+                  onLayout={event => setHeaderWidth(event.nativeEvent.layout.width)}>
+                {!!data?.length && data.map((item, index) => (
+                    <View key={index}
+                          style={{flex: 1}}
+                          onLayout={event => setPillWidth(event.nativeEvent.layout.width)}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                onPillPress(index)
+
+                                if (index === currentIndex && scrollableContainer)
+                                    containerRef?.current?.scrollTo({x: 0, y: 0, animated: true})
+                            }}
+                            style={[
+                                {
+                                    paddingHorizontal: 5,
+                                    flexGrow: 1,
+                                    alignItems: 'center',
+                                },
+                                style?.pillButton,
+                            ]}
+                        >
+                            <Text style={[
+                                style?.pillLabel || styles.pillLabel,
+                                index === currentIndex && (style?.activeLabel || styles.activePill),
+                            ]}>
+                                {item.tabLabel}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                ))}
+            </View>
+            <View style={[
+                {
+                    alignSelf: 'flex-start',
+                    marginHorizontal: 10,
+                    width: pillWidth - 20,
+                    borderColor: 'red',
+                    borderBottomWidth: 2,
+                    transform: [{translateX: transX}],
+                },
+                style?.borderActive || styles.activeBorder,
+            ]}/>
+        </>
     );
 }
 
